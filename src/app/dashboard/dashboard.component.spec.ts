@@ -50,15 +50,16 @@ describe('DashboardComponent', () => {
 
   it('should not call getHeroes before onInit', () => {
     expect(el.innerText).toBe('', 'nothing displayed');
+    expect(component.heroes.length).toBe(0);
     expect(spy.calls.any()).toBe(false, 'getHeroes not yet called');
   });
 
-  it('should be created', () => {
+  it('should create dashboard component', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
-  it('should call getHeroes and populate heroes array', () => {
+  it('should call getHeroes and populate heroes array onInit', () => {
     fixture.detectChanges();
     expect(spy).toHaveBeenCalledTimes(1);
 
@@ -70,7 +71,7 @@ describe('DashboardComponent', () => {
 
   it('should populate heroes grid on dashboard with mock data', () => {
     fixture.detectChanges();
-    let pageData =  el.innerHTML;
+    let pageData = el.innerHTML;
     let displayedHeroes = fixture.debugElement.queryAll(By.css('.module.hero'));
 
     expect(displayedHeroes.length).toEqual(4);
