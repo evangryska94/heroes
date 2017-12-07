@@ -16,9 +16,12 @@ describe('HeroesComponent', () => {
   let component: HeroesComponent;
   let fixture: ComponentFixture<HeroesComponent>;
   let rootEl:      HTMLElement;
+
   let heroService;
   let getHeroesSpy;
   let addHeroesSpy;
+  let deleteHeroesSpy;
+
   let heroName = 'TestHero'
   let hero = new Hero(21, heroName);
 
@@ -47,6 +50,8 @@ describe('HeroesComponent', () => {
       .and.returnValue(Observable.of(hero));
 
     //spy on deleteHero
+    deleteHeroesSpy = spyOn(heroService, 'deleteHero')
+      .and.returnValue(Observable.of(hero));
 
     //assign debug element per test
   });
@@ -115,15 +120,24 @@ describe('HeroesComponent', () => {
   it('should add hero on button click', () => {
     fixture.detectChanges();
     let addHeroButton = fixture.debugElement.query(By.css('button'));
-    // let addHeroButton = addHeroDiv.query(By.css('button')).nativeElement;
-    console.log(addHeroButton)
     let inputHeroName = fixture.debugElement.query(By.css('input')).nativeElement;
     inputHeroName.value = heroName;
-    console.log(inputHeroName);
 
     addHeroButton.triggerEventHandler('click', { button: 0 });
 
     expect(component.heroes.length).toBe(11);
     expect(addHeroesSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should delete hero on button click', () => {
+    fixture.detectChanges();
+    let deleteButtons = fixture.debugElement.queryAll(By.css('.delete'));
+    //get delete button for last added hero, TestHero
+    let deleteTestHeroButton = deleteButtons[deleteButtons.length - 1]
+
+    deleteTestHeroButton.triggerEventHandler('click', { button: 0 });
+
+    expect(component.heroes.length).toBe(10);
+    expect(deleteHeroesSpy).toHaveBeenCalledTimes(1);
   });
 });
