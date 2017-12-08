@@ -249,4 +249,65 @@ describe('HeroService', () => {
             backend.expectOne(`api/heroes`).error(new ErrorEvent('test error'));
         });
     });
+
+    describe('DELETE requests', () => {
+        let backend: HttpTestingController;
+        let heroService: HeroService;
+        let spy;
+
+        beforeEach(inject([HttpClient, HttpTestingController], (httpClient: HttpClient, mockBackend: HttpTestingController) => {
+            backend = mockBackend;
+            heroService = new HeroService(httpClient, messageService);
+
+            spy = spyOn(messageService, 'add').and.stub();
+        }));
+
+        afterEach(inject([HttpTestingController], (backend: HttpTestingController) => {
+            backend.verify();
+        }));
+
+        it('deleteHero should send request to delete a hero when passed a Hero', async() => {
+            let hero = HEROES[0];
+            heroService.deleteHero(hero).subscribe();
+
+            backend.expectOne((request: HttpRequest<any>) => {
+                return request.url === `api/heroes/${hero.id}`
+                    && request.method === 'DELETE'
+                    && request.headers.get('Content-type') === 'application/json';
+            });
+        });
+
+        it('deleteHero should send request to delete a hero when passed a number', async() => {
+            let hero = HEROES[0].id;
+            heroService.deleteHero(hero).subscribe();
+
+            backend.expectOne((request: HttpRequest<any>) => {
+                return request.url === `api/heroes/${hero}`
+                    && request.method === 'DELETE'
+                    && request.headers.get('Content-type') === 'application/json';
+            });
+        });
+
+        it('deleteHero should return the deleted hero', async() => {
+            let hero = HEROES[0];
+            heroService.deleteHero(hero).subscribe((result) => {
+                expect(result).toBe(hero);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: deleted hero id=${hero.id}`);
+            });
+
+            backend.expectOne(`api/heroes/${hero.id}`).flush(hero)
+        });
+
+        it('deleteHero should handle error', async() => {
+            let hero = 0;
+            heroService.deleteHero(hero).subscribe((result) => {
+                expect(result).toEqual(undefined);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: deleteHero failed: Http failure response for api/heroes/${hero}: 0 `);
+            });
+
+            backend.expectOne(`api/heroes/${hero}`).error(new ErrorEvent('test error'));
+        });
+    });
 });
