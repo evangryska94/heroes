@@ -26,3 +26,4 @@ Starting with the Tour of Heroes sample angular project from the Angular4 Tutori
 * Access private variables on a component or service through the TestBed using `TestBed.get(ClassName)`
 * Angular Router has changed in Angular4 in the way you access parameters
 * Make sure to grab an element on the page after everything has been set up. Grabbing buttons before all spys are set up can have unexpected behavior!
+* Angular4 uses the new `HttpClient` library, as opposed to the `Http` library of Angular2. By default, `HttpClient` maps the response to `Observable<Object>`, assuming by default the response is JSON.
