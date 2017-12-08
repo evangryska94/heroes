@@ -52,7 +52,7 @@ describe('HeroService', () => {
             backend.verify();
         }));
 
-        it('should send request to get all heroes', async() => {
+        it('getHeroes should send request to get all heroes', async() => {
             heroService.getHeroes().subscribe();
 
             backend.expectOne((request: HttpRequest<any>) => {
@@ -61,7 +61,7 @@ describe('HeroService', () => {
             });
         });
 
-        it('should return all heroes retrieved', async() => {
+        it('getHeroes should return all heroes retrieved', async() => {
             heroService.getHeroes().subscribe((result) => {
                 expect(result.length).toBe(HEROES.length);
                 expect(result).toBe(HEROES);
@@ -72,9 +72,8 @@ describe('HeroService', () => {
             backend.expectOne('api/heroes').flush(HEROES)
         });
 
-        it('should handle error', async() => {
+        it('getHeroes should handle error', async() => {
             heroService.getHeroes().subscribe((result) => {
-                console.log(result);
                 expect(result).toEqual([]);
                 expect(spy).toHaveBeenCalledTimes(1);
                 expect(spy).toHaveBeenCalledWith('HeroService: getHeroes failed: Http failure response for api/heroes: 0 ');
@@ -83,5 +82,121 @@ describe('HeroService', () => {
             backend.expectOne('api/heroes').error(new ErrorEvent('test error'));
         });
 
+        it('getHeroNo404 should send request to get a hero', async() => {
+            let id = 11;
+            heroService.getHeroNo404(id).subscribe();
+
+            backend.expectOne((request: HttpRequest<any>) => {
+                return request.url === `api/heroes/?id=${id}`
+                    && request.method === 'GET';
+            });
+        });
+
+        it('getHeroNo404 should return the found hero', async() => {
+            let id = 11;
+            heroService.getHeroNo404(id).subscribe((result) => {
+                expect(result).toBe(HEROES[0]);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: fetched hero id=${id}`);
+            });
+
+            backend.expectOne(`api/heroes/?id=${id}`).flush([HEROES[0]])
+        });
+
+        it('getHeroNo404 should return undefined if no hero found', async() => {
+            let id = 11;
+            heroService.getHeroNo404(id).subscribe((result) => {
+                expect(result).toBe(undefined);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: did not find hero id=${id}`);
+            });
+
+            backend.expectOne(`api/heroes/?id=${id}`).flush([])
+        });
+
+        it('getHeroNo404 should handle error', async() => {
+            let id = 11;
+            heroService.getHeroNo404(id).subscribe((result) => {
+                expect(result).toEqual(undefined);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: getHero id=${id} failed: Http failure response for api/heroes/?id=${id}: 0 `);
+            });
+
+            backend.expectOne(`api/heroes/?id=${id}`).error(new ErrorEvent('test error'));
+        });
+
+        it('getHero should send request to get a hero', async() => {
+            let id = 11;
+            heroService.getHero(id).subscribe();
+
+            backend.expectOne((request: HttpRequest<any>) => {
+                return request.url === `api/heroes/${id}`
+                    && request.method === 'GET';
+            });
+        });
+
+        it('getHero should return the found hero', async() => {
+            let id = 11;
+            heroService.getHero(id).subscribe((result) => {
+                expect(result).toBe(HEROES[0]);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: fetched hero id=${id}`);
+            });
+
+            backend.expectOne(`api/heroes/${id}`).flush(HEROES[0])
+        });
+
+        it('getHero should handle error', async() => {
+            let id = 11;
+            heroService.getHero(id).subscribe((result) => {
+                expect(result).toEqual(undefined);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: getHero id=${id} failed: Http failure response for api/heroes/${id}: 0 `);
+            });
+
+            backend.expectOne(`api/heroes/${id}`).error(new ErrorEvent('test error'));
+        });
+
+        it('searchHeroes should send request to get a hero', async() => {
+            let searchTerm = 'Mr. Nice';
+            heroService.searchHeroes(searchTerm).subscribe();
+
+            backend.expectOne((request: HttpRequest<any>) => {
+                return request.url === `api/heroes/?name=${searchTerm}`
+                    && request.method === 'GET';
+            });
+        });
+
+        it('searchHeroes should return the found hero', async() => {
+            let searchTerm = 'Mr. Nice';
+            heroService.searchHeroes(searchTerm).subscribe((result) => {
+                expect(result).toEqual([HEROES[0]]);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: found heroes matching "${searchTerm}"`);
+            });
+
+            backend.expectOne(`api/heroes/?name=${searchTerm}`).flush([HEROES[0]])
+        });
+
+        it('searchHeroes should return empty array if no term is searched', () => {
+            let searchTerm = ' ';
+            heroService.searchHeroes(searchTerm).subscribe((result) => {
+                expect(result).toEqual([]);
+                expect(spy).not.toHaveBeenCalled();
+            });
+
+            backend.expectNone(`api/heroes/?name=${searchTerm}`);
+        });
+
+        it('searchHeroes should handle error', async() => {
+            let searchTerm = 'Mr. Nice';
+            heroService.searchHeroes(searchTerm).subscribe((result) => {
+                expect(result).toEqual([]);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: searchHeroes failed: Http failure response for api/heroes/?name=${searchTerm}: 0 `);
+            });
+
+            backend.expectOne(`api/heroes/?name=${searchTerm}`).error(new ErrorEvent('test error'));
+        });
     });
 });
