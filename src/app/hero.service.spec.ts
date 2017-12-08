@@ -310,4 +310,55 @@ describe('HeroService', () => {
             backend.expectOne(`api/heroes/${hero}`).error(new ErrorEvent('test error'));
         });
     });
+
+    describe('PUT requests', () => {
+        let backend: HttpTestingController;
+        let heroService: HeroService;
+        let spy;
+
+        beforeEach(inject([HttpClient, HttpTestingController], (httpClient: HttpClient, mockBackend: HttpTestingController) => {
+            backend = mockBackend;
+            heroService = new HeroService(httpClient, messageService);
+
+            spy = spyOn(messageService, 'add').and.stub();
+        }));
+
+        afterEach(inject([HttpTestingController], (backend: HttpTestingController) => {
+            backend.verify();
+        }));
+
+        it('updateHero should send request to update a hero', async() => {
+            let hero = new Hero(11, 'Mr. Mean');
+            heroService.updateHero(hero).subscribe();
+
+            backend.expectOne((request: HttpRequest<any>) => {
+                return request.url === `api/heroes`
+                    && request.method === 'PUT'
+                    && request.headers.get('Content-type') === 'application/json'
+                    && request.body['id'] === 11
+                    && request.body['name'] === 'Mr. Mean';
+            });
+        });
+
+        it('updateHero should return the updated hero', async() => {
+            let hero = new Hero(11, 'Mr. Mean');
+            heroService.updateHero(hero).subscribe((result) => {
+                expect(result).toBe(hero);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: updated hero id=${hero.id}`);
+            });
+
+            backend.expectOne(`api/heroes`).flush(hero)
+        });
+
+        it('updateHero should handle error', async() => {
+            heroService.updateHero(null).subscribe((result) => {
+                expect(result).toEqual(undefined);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: updateHero failed: Http failure response for api/heroes: 0 `);
+            });
+
+            backend.expectOne(`api/heroes`).error(new ErrorEvent('test error'));
+        });
+    });
 });
