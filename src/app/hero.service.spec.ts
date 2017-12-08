@@ -1,6 +1,6 @@
 import { async, inject, TestBed } from '@angular/core/testing';
 import { MockBackend, MockConnection } from '@angular/http/testing';
-import { HttpClientModule, HttpClient, HttpResponse, HttpRequest } from '@angular/common/http';
+import { HttpClientModule, HttpClient, HttpRequest, HttpHeaders } from '@angular/common/http';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { Observable } from 'rxjs/Observable';
@@ -38,7 +38,6 @@ describe('HeroService', () => {
     describe('GET requests', () => {
         let backend: HttpTestingController;
         let heroService: HeroService;
-        let response;
         let spy;
 
         beforeEach(inject([HttpClient, HttpTestingController], (httpClient: HttpClient, mockBackend: HttpTestingController) => {
@@ -157,7 +156,7 @@ describe('HeroService', () => {
             backend.expectOne(`api/heroes/${id}`).error(new ErrorEvent('test error'));
         });
 
-        it('searchHeroes should send request to get a hero', async() => {
+        it('searchHeroes should send request to find all heroes with a given search term', async() => {
             let searchTerm = 'Mr. Nice';
             heroService.searchHeroes(searchTerm).subscribe();
 
@@ -167,7 +166,7 @@ describe('HeroService', () => {
             });
         });
 
-        it('searchHeroes should return the found hero', async() => {
+        it('searchHeroes should return the found heroes', async() => {
             let searchTerm = 'Mr. Nice';
             heroService.searchHeroes(searchTerm).subscribe((result) => {
                 expect(result).toEqual([HEROES[0]]);
@@ -197,6 +196,58 @@ describe('HeroService', () => {
             });
 
             backend.expectOne(`api/heroes/?name=${searchTerm}`).error(new ErrorEvent('test error'));
+        });
+    });
+
+    describe('POST requests', () => {
+        let backend: HttpTestingController;
+        let heroService: HeroService;
+        let spy;
+
+        beforeEach(inject([HttpClient, HttpTestingController], (httpClient: HttpClient, mockBackend: HttpTestingController) => {
+            backend = mockBackend;
+            heroService = new HeroService(httpClient, messageService);
+
+            spy = spyOn(messageService, 'add').and.stub();
+        }));
+
+        afterEach(inject([HttpTestingController], (backend: HttpTestingController) => {
+            backend.verify();
+        }));
+
+        it('addHero should send request to get a hero', async() => {
+            let newHero = new Hero(0, 'TestHero');
+            heroService.addHero(newHero).subscribe();
+
+            backend.expectOne((request: HttpRequest<any>) => {
+                return request.url === `api/heroes`
+                    && request.method === 'POST'
+                    && request.headers.get('Content-type') === 'application/json'
+                    && request.body['id'] === 0
+                    && request.body['name'] === 'TestHero';
+            });
+        });
+
+        it('addHero should return the added hero', async() => {
+            let newHero = new Hero(0, 'TestHero');
+            heroService.addHero(newHero).subscribe((result) => {
+                expect(result).toBe(newHero);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: added hero w/ id=${newHero.id}`);
+            });
+
+            backend.expectOne(`api/heroes`).flush(newHero)
+        });
+
+        it('addHero should handle error', async() => {
+            let newHero = new Hero(0, 'TestHero');
+            heroService.addHero(null).subscribe((result) => {
+                expect(result).toEqual(undefined);
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy).toHaveBeenCalledWith(`HeroService: addHero failed: Http failure response for api/heroes: 0 `);
+            });
+
+            backend.expectOne(`api/heroes`).error(new ErrorEvent('test error'));
         });
     });
 });
