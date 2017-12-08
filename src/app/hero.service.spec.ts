@@ -215,9 +215,9 @@ describe('HeroService', () => {
             backend.verify();
         }));
 
-        it('addHero should send request to get a hero', async() => {
-            let newHero = new Hero(0, 'TestHero');
-            heroService.addHero(newHero).subscribe();
+        it('addHero should send request to add a hero', async() => {
+            let hero = new Hero(0, 'TestHero');
+            heroService.addHero(hero).subscribe();
 
             backend.expectOne((request: HttpRequest<any>) => {
                 return request.url === `api/heroes`
@@ -229,18 +229,17 @@ describe('HeroService', () => {
         });
 
         it('addHero should return the added hero', async() => {
-            let newHero = new Hero(0, 'TestHero');
-            heroService.addHero(newHero).subscribe((result) => {
-                expect(result).toBe(newHero);
+            let hero = new Hero(0, 'TestHero');
+            heroService.addHero(hero).subscribe((result) => {
+                expect(result).toBe(hero);
                 expect(spy).toHaveBeenCalledTimes(1);
-                expect(spy).toHaveBeenCalledWith(`HeroService: added hero w/ id=${newHero.id}`);
+                expect(spy).toHaveBeenCalledWith(`HeroService: added hero w/ id=${hero.id}`);
             });
 
-            backend.expectOne(`api/heroes`).flush(newHero)
+            backend.expectOne(`api/heroes`).flush(hero)
         });
 
         it('addHero should handle error', async() => {
-            let newHero = new Hero(0, 'TestHero');
             heroService.addHero(null).subscribe((result) => {
                 expect(result).toEqual(undefined);
                 expect(spy).toHaveBeenCalledTimes(1);
