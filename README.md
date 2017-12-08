@@ -1,5 +1,23 @@
 # Angular4 Testing
-### Tour of Heroes
+## Tour of Heroes
+Starting with the Tour of Heroes sample angular project from the Angular4 Tutorial, unit tests for services and components have been added.
+
+### Instructions
+* Download the repository and navigate into the new directory
+    * `git clone https://github.com/evangryska94/heroes`
+    * `cd heroes`
+
+* Install node modules
+    * `npm install`
+
+* To run the Tour of Heroes application
+    * `ng serve --open`
+
+* To run all unit tests using Karma and Jasmine
+    * `ng test`
+
+* To run all end to end tests using Protractor
+    * `ng e2e`
 
 ### Tips
 * To trigger button clicks:
